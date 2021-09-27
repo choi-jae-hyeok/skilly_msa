@@ -322,32 +322,33 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Long>
 
 **Order서비스 커피캡슐 주문**
 ```
-http POST http://20.196.242.11:8080/applies studentId="student1" studentName="홍길동" qty=10 amount=1000 applyStatus="completed" address="seoul" bookId="001" bookName="book001"
+http POST http://52.231.192.155:8080/orders customerId="cust1" customerName="Jack" coffeeId="001" coffeeName="Yirgacheffe" qty=5 amount=1000 orderStatus="completed" address="seoul"  
 ```
 
-![증빙1](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/2-1-ddd-reg.png)
+![Order POST](https://user-images.githubusercontent.com/18024566/134940173-bb3060da-2c72-466a-9efe-a8b2fe965a5a.PNG)
 
-**Apply/Pag/Delivery/MyPage서비스 신청정보 조회**
+
+**Order/Pag/Delivery/MyPage서비스 신청정보 조회**
 ```
-http http://20.196.242.11:8080/applies
-http http://20.196.242.11:8080/pays
-http http://20.196.242.11:8080/deliveries
-http http://20.196.242.11:8080/myPages
+http http://52.231.192.155:8080/orders 
+http http://52.231.192.155:8080/pays 
+http http://52.231.192.155:8080/deliveries 
+http http://52.231.192.155:8080/myPages 
 ```
-
-![증빙2](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/2-2-ddd-retrieve-1.png)
-
-![증빙3](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/2-2-ddd-retrieve-2.png)
+![Order 조회](https://user-images.githubusercontent.com/18024566/134940287-22b91d9f-ccf1-41e1-8e89-15a7fb2c9ca8.PNG)
+![Pay 조회](https://user-images.githubusercontent.com/18024566/134940297-0f9e8c27-491e-4551-a106-5509590fed26.PNG)
+![Delivery 조회](https://user-images.githubusercontent.com/18024566/134940305-6792d593-fb85-469c-b4f0-27e52b0be092.PNG)
+![MyPage 조회](https://user-images.githubusercontent.com/18024566/134940313-2d0b92ef-94c9-404b-9800-76a7be4d87c7.PNG)
 
 
 ## CQRS/Saga/Correlation-key
 - CQRS : Materialized View를 구현하여, 타 마이크로서비스의 데이터 원본에 접근없이(Composite 서비스나 조인SQL 등 없이)도 내 서비스의 화면 구성과 잦은 조회가 가능하게 구현해 두었다. 본 프로젝트에서 View 역할은 MyPages 서비스가 수행한다.
 
-신청 / 결제 / 배송 서비스의 전체 현황 및 상태 조회를 제공하기 위해 MyPage를 구성하였다.
+주문/ 결제 / 배송 서비스의 전체 현황 및 상태 조회를 제공하기 위해 MyPage를 구성하였다.
 
-신규 교재 신청 정보를 등록한다.
+커피캡슐 주문 정보를 등록한다.
 
-**Apply 등록**
+** 등록**
 
 ![증빙3](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/2-1-ddd-reg.png)
 
