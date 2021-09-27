@@ -45,7 +45,7 @@
 # 구현
 - 분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다 (각각의 포트넘버는 8081 ~ 8084, 8088 이다)
 ```
-cd Apply
+cd Order
 mvn spring-boot:run  
 
 cd Pay
@@ -74,10 +74,10 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: Apply
+        - id: Order
           uri: http://localhost:8081
           predicates:
-            - Path=/applies/** 
+            - Path=/orders/** 
         - id: Pay
           uri: http://localhost:8082
           predicates:
@@ -109,10 +109,10 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: Apply
-          uri: http://Apply:8080
+        - id: Order
+          uri: http://Order:8080
           predicates:
-            - Path=/applies/** 
+            - Path=/orders/** 
         - id: Pay
           uri: http://Pay:8080
           predicates:
