@@ -1,0 +1,228 @@
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Orderh
+  labels:
+    app: Order
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: Order
+  template:
+    metadata:
+      labels:
+        app: Order
+    spec:
+      containers:
+        - name: Order
+          image: username/Order:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 5
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Pay
+  labels:
+    app: Pay
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: Pay
+  template:
+    metadata:
+      labels:
+        app: Pay
+    spec:
+      containers:
+        - name: Pay
+          image: username/Pay:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 5
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Delivery
+  labels:
+    app: Delivery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: Delivery
+  template:
+    metadata:
+      labels:
+        app: Delivery
+    spec:
+      containers:
+        - name: Delivery
+          image: username/Delivery:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 5
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: MyPage
+  labels:
+    app: MyPage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: MyPage
+  template:
+    metadata:
+      labels:
+        app: MyPage
+    spec:
+      containers:
+        - name: MyPage
+          image: username/MyPage:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 5
+
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: Order
+  labels:
+    app: Order
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: Order
+
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: Pay
+  labels:
+    app: Pay
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: Pay
+
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: Delivery
+  labels:
+    app: Delivery
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: Delivery
+
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: MyPage
+  labels:
+    app: MyPage
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: MyPage
+
