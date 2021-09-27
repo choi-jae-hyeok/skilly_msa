@@ -22,7 +22,7 @@
 
 # 분석/설계
    
-## Event Storming 결과
+### Event Storming 결과
 ![Slide2](https://user-images.githubusercontent.com/18024566/134931292-8eecc8e0-bfc9-46ba-b1da-334ee82761ed.jpg)
 
 ![Slide3](https://user-images.githubusercontent.com/18024566/134931346-2e65706f-c379-42c7-8fb2-ed91942d7de5.jpg)
