@@ -421,25 +421,18 @@ public interface DeliveryService {
 
 **잠시 배송 서비스(Delivery) 중지**
 
-![증빙7](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/6-1-delivery_stop.png)
+![동기식호출 일시 중단](https://user-images.githubusercontent.com/18024566/134949299-c9d42f4a-d716-4e90-8840-3ac2541fc73b.PNG)
 
-**신청 취소 요청시 결제 서비스(Pay) 변화 없음**
 
-```
-http PUT http://20.196.242.11:8080/pay/1 studentId="student1" studentName="홍길동" qty=10 amount=1000 applyStatus="cancelled" address="seoul" bookId="001" bookName="book001"
-```
+**결제 취소 요청시 에러 발생**
 
-![증빙8](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/6-2-1-cancel.png)
+![결제취소시 에러 발생](https://user-images.githubusercontent.com/18024566/134949481-0878e5e0-90bb-48a2-991c-0dab45accdf1.PNG)
 
-![증빙8](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/6-2-2-cancel.png)
 
-**배송 서비스(Delivery) 기동 후 신청취소**
+**배송 서비스 재기동 후 정상 처리**
 
-![증빙9](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/6-3-delete.png)
+![재기동 후 정상 처리](https://user-images.githubusercontent.com/18024566/134949614-0ec231c5-bb18-4318-b2ea-00581d6ee374.PNG)
 
-**결제 서비스(Pay) 상태를 보면 신청 정상 취소 처리**
-
-![증빙9](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/6-4-paycancelled.png)
 
 **Fallback 설정**
 ```java
@@ -466,76 +459,80 @@ import org.springframework.stereotype.Service;
 public class PayServiceImpl implements PayService {
     @Override
     public void pay(Pay pay) {
-        System.out.println("@@@@@@@@@@@@@@@@@@@@@ StudentApply Pay service is BUSY @@@@@@@@@@@@@@@@@@@@@");
+        System.out.println("@@@@@@@@@@@@@@@@@@@@@ Pay service is BUSY @@@@@@@@@@@@@@@@@@@@@");
         System.out.println("@@@@@@@@@@@@@@@@@@@@@   Try again later   @@@@@@@@@@@@@@@@@@@@@");
     }
 }
 
 ```
 
-**Fallback 결과(Apply데이터 추가 시)**
+**Fallback 결과**
 
-![image](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/6-5-fallback.png)
+![Fallback처리](https://user-images.githubusercontent.com/18024566/134949811-6451e436-4448-4364-a3f5-c24a8791222a.PNG)
 
-## 비동기식 호출 / 시간적 디커플링 / 장애격리 / 최종 (Eventual) 일관성 테스트
-- 결제가 이루어진 후에 배송 서비스로 이를 알려주는 행위는 동기식이 아니라 비동기식으로 처리하여 배송를 위하여 결제가 블로킹 되지 않도록 처리한다.
-이를 위하여 결제서비스에 기록을 남긴 후에 곧바로 결제완료 되었다는 도메인 이벤트를 카프카로 송출한다(Publish)
+## 비동기식 호출
+- Order 서비스 내 Order.jav에서 아래와 같이 서비스 Pub 구현
 ``` JAVA
   ...
-    @PostPersist
-    public void onPostPersist(){
-        // kafka publish
-        PayCompleted payCompleted = new PayCompleted();
-        BeanUtils.copyProperties(this, payCompleted);
-        payCompleted.setApplyStatus("completed");
-        payCompleted.publishAfterCommit();  
-    }  
+  @PostUpdate
+    public void onPostUpdate() {
+        System.out.println("################## Order onPostUpdate OrderCancelled");
+        // kafka에 push
+        OrderCancelled orderCancelled = new OrderCancelled();
+        BeanUtils.copyProperties(this, orderCancelled);
+        orderCancelled.setOrderStatus("cancelled");
+        orderCancelled.publishAfterCommit();
+    }
 ```
 
-- 배송 서비스에서는 결제완료 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다:
+- Pay 서비스 내 PolicyHandler.java에서 아래와 같이 Sub 구현
 ``` JAVA
-public class PolicyHandler{
- ...
+public class PolicyHandler {
+    @Autowired
+    PayRepository payRepository;
+
     @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverPayCompleted_Delivery(@Payload PayCompleted payCompleted){
+    public void wheneverOrderCancelled_PayCancel(@Payload OrderCancelled orderCancelled) {
 
-        if (!payCompleted.validate()) return;
-        
-        Delivery delivery = new Delivery();
-        delivery.setId(payCompleted.getId());
-        delivery.setStudentId(payCompleted.getStudentId());
-        delivery.setStudentName(payCompleted.getStudentName());
-        delivery.setBookId(payCompleted.getBookId());
-        delivery.setBookName(payCompleted.getBookName());
-        delivery.setQty(payCompleted.getQty());
-        delivery.setAmount(payCompleted.getAmount());
-        delivery.setApplyStatus("completed");
-        delivery.setDeliveryAddress(payCompleted.getAddress());
-        deliveryRepository.save(delivery);
-    
-    }    
+        if (!orderCancelled.validate())
+            return;
+
+        System.out.println("\n\n##### listener PayCancel : " + orderCancelled.toJson() + "\n\n");
+
+        // 객체 조회
+        Optional<Pay> Optional = payRepository.findById(orderCancelled.getId());
+
+        if (Optional.isPresent()) {
+            System.out.println("\n\n##### listener PayCancel Optional ID : " + orderCancelled.getId() + "/CoffeeName"
+                    + orderCancelled.getCoffeeName() + "\n\n");
+            Pay pay = Optional.get();
+
+            // 객체에 이벤트의 eventDirectValue 를 set 함
+            pay.setId(orderCancelled.getId());
+            pay.setCustomerId(orderCancelled.getCustomerId());
+            pay.setCustomerName(orderCancelled.getCustomerName());
+            pay.setCoffeeId(orderCancelled.getCoffeeId());
+            pay.setCoffeeName(orderCancelled.getCoffeeName());
+            pay.setQty(orderCancelled.getQty());
+            pay.setOrderStatus("cancelled");
+            pay.setAddress(orderCancelled.getAddress());
+
+            // 레파지 토리에 save
+            payRepository.save(pay);
+        }
+
+    } 
+```
+- 비동기식 호출은 다른 서비스가 비정상이여도 이상없이 동작가능하여, payment 서비스에 장애가 나도 order 서비스는 정상 동작을 확인
 ```
 
-- 배송 서비스는 교재신청/결제와 완전히 분리되어있으며, 이벤트 수신에 따라 처리되기 때문에, 배송 서비스가 유지보수 등의 이류로 인해 잠시 내려간 상태라도 신청을 받는데 문제가 없다:
-```
-# 배송 서비스 (Delivery) 를 잠시 내려놓음
-# 교재신청 처리 후 교재신청 및 결제 처리 Event 진행 확인
-```
+**Pay 서비스 내림**
 
-**Apply 신청**
-![9](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/6-6-async-1.png)
+![비동기식 - pay 내림](https://user-images.githubusercontent.com/18024566/134950688-2be395ff-eac2-49b0-8799-6bbf81df5a70.PNG)
 
-**Kafka Publish 정보**
-![10](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/6-7-async-2.png)
+**주문취소 정상 확인**
 
-```
-# 배송 서비스 기동
-```
-
-**배송 서비스(Delivery) Subscribe 정보**
-![11](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/6-8-async-3.png)
-
-
+![비동기식 - order 취소 정상](https://user-images.githubusercontent.com/18024566/134950731-c5b7da76-0a98-4fce-a3fa-64009952fc77.PNG)
 
 # 운영
 
