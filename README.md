@@ -15,8 +15,8 @@
 1. 트랜젝션
    1. 결제 취소 시 커피캡슐 배송이 진행되지 않는다 → Sync 호출
 2. 장애격리
-   1. 배송에서 장애가 발생해도 결제와 주문은 가능해야 한다 →Async(event-driven), Eventual Consistency
-   1. 결제가 과부화되면 결제를 잠시 후 처리하도록 유도한다 → Circuit breaker, fallback
+   1. 결제에 장애가 발생해도 주문취소는 가능해야 한다 →Async(event-driven), Eventual Consistency
+   1. 결제가 과부화되면 주문은 잠시 후 처리하도록 유도한다 → Circuit breaker, fallback
 3. 성능
    1. 고객이 주문상태를 주문내역 조회에서 확인할 수 있어야 한다 → CQRS
 
