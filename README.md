@@ -164,9 +164,9 @@ spec:
 
 
 ## DDD 의 적용
-- 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다: (예시는 Apply 마이크로 서비스).이때 가능한 현업에서 사용하는 언어 (유비쿼터스 랭귀지)를 그대로 사용하였다.
+- 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다: (예시는 Order 마이크로 서비스).이때 가능한 현업에서 사용하는 언어 (유비쿼터스 랭귀지)를 그대로 사용하였다.
 
-**Apply 마이크로 서비스의 Apply.java**
+**Order 마이크로 서비스의 Order.java**
 ```java 
 package store;
 
@@ -175,41 +175,58 @@ import org.springframework.beans.BeanUtils;
 import store.external.Pay;
 
 @Entity
-@Table(name="Apply_table")
-public class Apply {
+@Table(name = "Order_table")
+public class Order {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private String studentId;
-    private String studentName;
-    private String bookId;
-    private String bookName;
+    private String customerId;
+    private String customerName;
+    private String coffeeId;
+    private String coffeeName;
     private Integer qty;
     private Double amount;
-    private String applyStatus;
+    private String orderStatus;
     private String address;
 
     @PostPersist
-    public void onPostPersist(){
-        Applied applied = new Applied();
-        BeanUtils.copyProperties(this, applied);
-        applied.setApplyStatus("completed");
-        applied.publish(); 
-        
+    public void onPostPersist() {
+        System.out.println("################## Order onPostPersist Ordered");
+        // configMap 설정 // add by jm
+        String cfgServiceType = System.getenv("CFG_SERVICE_TYPE");
+        if (cfgServiceType == null)
+            cfgServiceType = "DEVELOP";
+        System.out.println("################## CFG_SERVICE_TYPE: " + cfgServiceType);
+
+        // kafka에 push
+        Ordered ordered = new Ordered();
+        BeanUtils.copyProperties(this, ordered);
+        ordered.setOrderStatus("completed");
+        // ordered.publishAfterCommit(); // modify by jm
+        ordered.publish();
+
+        // Following code causes dependency to external APIs
+        // it is NOT A GOOD PRACTICE. instead, Event-Policy mapping is recommended.
+        // store.external.Pay pay = new store.external.Pay(); // modify by jm
         Pay pay = new Pay();
         BeanUtils.copyProperties(this, pay);
-        ApplyApplication.applicationContext.getBean(store.external.PayService.class).pay(pay);
+
+        // feignclient 호출
+        OrderApplication.applicationContext.getBean(store.external.PayService.class).pay(pay);
     }
-    
+
+    // add by jm
     @PostUpdate
-    public void onPostUpdate(){
-        ApplyCancelled applyCancelled = new ApplyCancelled();
-        BeanUtils.copyProperties(this, applyCancelled);
-        applyCancelled.setApplyStatus("cancelled");
-        applyCancelled.publishAfterCommit();
+    public void onPostUpdate() {
+        System.out.println("################## Order onPostUpdate OrderCancelled");
+        // kafka에 push
+        OrderCancelled orderCancelled = new OrderCancelled();
+        BeanUtils.copyProperties(this, orderCancelled);
+        orderCancelled.setOrderStatus("cancelled");
+        orderCancelled.publishAfterCommit();
     }
-    
+
     public Long getId() {
         return id;
     }
@@ -217,34 +234,39 @@ public class Apply {
     public void setId(Long id) {
         this.id = id;
     }
-    public String getStudentId() {
-        return studentId;
+
+    public String getCustomerId() {
+        return customerId;
     }
 
-    public void setStudentId(String studentId) {
-        this.studentId = studentId;
-    }
-    public String getStudentName() {
-        return studentName;
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
     }
 
-    public void setStudentName(String studentName) {
-        this.studentName = studentName;
-    }
-    public String getBookId() {
-        return bookId;
+    public String getCustomerName() {
+        return customerName;
     }
 
-    public void setBookId(String bookId) {
-        this.bookId = bookId;
-    }
-    public String getBookName() {
-        return bookName;
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
     }
 
-    public void setBookName(String bookName) {
-        this.bookName = bookName;
+    public String getCoffeeId() {
+        return coffeeId;
     }
+
+    public void setCoffeeId(String coffeeId) {
+        this.coffeeId = coffeeId;
+    }
+
+    public String getCoffeeName() {
+        return coffeeName;
+    }
+
+    public void setCoffeeName(String coffeeName) {
+        this.coffeeName = coffeeName;
+    }
+
     public Integer getQty() {
         return qty;
     }
@@ -252,6 +274,7 @@ public class Apply {
     public void setQty(Integer qty) {
         this.qty = qty;
     }
+
     public Double getAmount() {
         return amount;
     }
@@ -259,13 +282,15 @@ public class Apply {
     public void setAmount(Double amount) {
         this.amount = amount;
     }
-    public String getApplyStatus() {
-        return applyStatus;
+
+    public String getOrderStatus() {
+        return orderStatus;
     }
 
-    public void setApplyStatus(String applyStatus) {
-        this.applyStatus = applyStatus;
+    public void setOrderStatus(String orderStatus) {
+        this.orderStatus = orderStatus;
     }
+
     public String getAddress() {
         return address;
     }
@@ -273,20 +298,21 @@ public class Apply {
     public void setAddress(String address) {
         this.address = address;
     }
+
 }
 ```
 
 - Entity Pattern 과 Repository Pattern 을 적용하여 JPA 를 통하여 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리가 없도록 데이터 접근 어댑터를 자동 생성하기 위하여 Spring Data REST 의 RestRepository 를 적용하였다
 
-**Apply 마이크로 서비스의 ApplyRepository.java**
+**Order 마이크로 서비스의 OrderRepository.java**
 ```JAVA
 package store;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
-@RepositoryRestResource(collectionResourceRel="applies", path="applies")
-public interface ApplyRepository extends PagingAndSortingRepository<Apply, Long>{
+@RepositoryRestResource(collectionResourceRel = "orders", path = "orders")
+public interface OrderRepository extends PagingAndSortingRepository<Order, Long> {
 
 }
 
@@ -294,7 +320,7 @@ public interface ApplyRepository extends PagingAndSortingRepository<Apply, Long>
 
 - DDD 적용 후 REST API의 테스트를 통하여 정상적으로 동작하는 것을 확인할 수 있었다.
 
-**Apply서비스 교재 신청**
+**Order서비스 커피캡슐 주문**
 ```
 http POST http://20.196.242.11:8080/applies studentId="student1" studentName="홍길동" qty=10 amount=1000 applyStatus="completed" address="seoul" bookId="001" bookName="book001"
 ```
