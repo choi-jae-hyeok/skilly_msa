@@ -159,15 +159,15 @@ spec:
     app: gateway
 ```
 
-**Gateway External IP**
+- Gateway External IP
 
 ![Gateway External IP](https://user-images.githubusercontent.com/18024566/134941493-3f2886d9-3c45-4968-b0fa-31594b0ff841.PNG)
 
 ## DDD 의 적용
 - 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다: (예시는 Order 마이크로 서비스).이때 가능한 현업에서 사용하는 언어 (유비쿼터스 랭귀지)를 그대로 사용하였다.
 
-**Order 마이크로 서비스의 Order.java**
-```java 
+- Order 마이크로 서비스의 Order.java
+```java
 package store;
 
 import javax.persistence.*;
@@ -301,7 +301,6 @@ public class Order {
 
 }
 ```
-
 - Entity Pattern 과 Repository Pattern 을 적용하여 JPA 를 통하여 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리가 없도록 데이터 접근 어댑터를 자동 생성하기 위하여 Spring Data REST 의 RestRepository 를 적용하였다
 
 **Order 마이크로 서비스의 OrderRepository.java**
