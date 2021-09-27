@@ -159,9 +159,7 @@ spec:
 
 **Gateway External IP**
 
-![gateway external IP](https://user-images.githubusercontent.com/18024566/134934645-1ce84be8-1a6f-414f-b605-d82edb82220c.PNG)
-
-
+![Gateway External IP](https://user-images.githubusercontent.com/18024566/134941493-3f2886d9-3c45-4968-b0fa-31594b0ff841.PNG)
 
 ## DDD 의 적용
 - 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다: (예시는 Order 마이크로 서비스).이때 가능한 현업에서 사용하는 언어 (유비쿼터스 랭귀지)를 그대로 사용하였다.
