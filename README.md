@@ -24,21 +24,21 @@
    
 ## Event Storming 결과
 
-![EventStormingV1](https://github.com/choi-jae-hyeok/skilly_msa/tree/main/Image/Slide2.JPG)
+![EventStormingV1](https://github.com/choi-jae-hyeok/skilly_msa/blob/main/Image/Slide2.JPG)
 
-![EventStormingV2](https://github.com/choi-jae-hyeok/skilly_msa/tree/main/Image/Slide3.JPG)
+![EventStormingV2](https://github.com/choi-jae-hyeok/skilly_msa/blob/main/Image/Slide3.JPG)
 
-![EventStormingV3](https://github.com/choi-jae-hyeok/skilly_msa/tree/main/Image/Slide4.JPG)
+![EventStormingV3](https://github.com/choi-jae-hyeok/skilly_msa/blob/main/Image/Slide4.JPG)
 
-![EventStormingV4](https://github.com/choi-jae-hyeok/skilly_msa/tree/main/Image/Slide5.JPG)
+![EventStormingV4](https://github.com/choi-jae-hyeok/skilly_msa/blob/main/Image/Slide5.JPG)
 
-![EventStormingV5](https://github.com/choi-jae-hyeok/skilly_msa/tree/main/Image/Slide6.JPG)
+![EventStormingV5](https://github.com/choi-jae-hyeok/skilly_msa/blob/main/Image/Slide6.JPG)
 
-![EventStormingV6](https://github.com/choi-jae-hyeok/skilly_msa/tree/main/Image/Slide7.JPG)
+![EventStormingV6](https://github.com/choi-jae-hyeok/skilly_msa/blob/main/Image/Slide7.JPG)
 
-![EventStormingV7](https://github.com/choi-jae-hyeok/skilly_msa/tree/main/Image/Slide8.JPG)
+![EventStormingV7](https://github.com/choi-jae-hyeok/skilly_msa/blob/main/Image/Slide8.JPG)
 
-![EventStormingV8](https://github.com/choi-jae-hyeok/skilly_msa/tree/main/Image/Slide9.JPG)
+![EventStormingV8](https://github.com/choi-jae-hyeok/skilly_msa/blob/main/Image/Slide9.JPG)
 
 ## 헥사고날 아키텍처 다이어그램 도출
 ![증빙1](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/1-hex_diagram.png)
