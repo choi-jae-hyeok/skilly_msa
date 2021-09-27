@@ -158,6 +158,7 @@ spec:
 ```
 
 **Gateway External IP**
+
 ![gateway external IP](https://user-images.githubusercontent.com/18024566/134934645-1ce84be8-1a6f-414f-b605-d82edb82220c.PNG)
 
 
