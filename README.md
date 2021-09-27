@@ -350,47 +350,49 @@ http http://52.231.192.155:8080/myPages
 
 ** 등록**
 
-![증빙3](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/2-1-ddd-reg.png)
+![Order POST](https://user-images.githubusercontent.com/18024566/134940692-dd5851bd-5ea4-4bf8-a8a9-71ce28a1f762.PNG)
+
 
 MyPage CQRS 결과는 아래와 같다
 
-**Apply 실행 후 MyPages**
+**Order 실행 후 MyPages**
 
-![증빙4](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/4-0-apply.png)
+![MyPage 조회](https://user-images.githubusercontent.com/18024566/134940745-7b8ba72d-9087-4e88-8a6f-236eef459a27.PNG)
+
 
 - Correlation-key 
 
 Correlation을 Key를 활용하기 위해 Id를 Key값으로 사용하였으며 신청된 교재를 동일한 Id로 취소한다.
 
-신청 취소가 되면 ApplyStatus가 cancelled로 Update 되는 것을 볼 수 있다.
+신청 취소가 되면 OrderStatus가 cancelled로 Update 되는 것을 볼 수 있다.
 
-**Apply서비스 교재 신청**
+**Order서비스 주문 취소**
 ```
-http PUT http://20.196.242.11:8080/applies/1 studentId="student1" studentName="홍길동" qty=10 amount=1000 applyStatus="cancelled" address="seoul" bookId="001" bookName="book001"
+http PUT http://52.231.192.155:8080/orders/1 customerId="cust1" customerName="Jack" coffeeId="001" coffeeName="Yirgacheffe" qty=5 amount=1000 orderStatus="cancelled" address="seoul" 
 ```
 
-![증빙4](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/4-2-apply.png)
+![Order 취소](https://user-images.githubusercontent.com/18024566/134940891-a8edf6f8-8d51-47f5-a1af-0cd91bc4d94d.PNG)
 
-위와 같이 하게되면 Apply > Pay > Delivery > MyPage 순서로 신청이 처리된다.
 
-![증빙4](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/4-3-apply.png)
+위와 같이 하게되면 Order > Pay > Delivery > MyPage 순서로 신청이 처리된다.
+
+![Order 취소](https://user-images.githubusercontent.com/18024566/134940989-04de44f6-06a1-4989-9971-c943c1c5e631.PNG)
+![Pay 취소](https://user-images.githubusercontent.com/18024566/134940968-7fe56083-db04-45c9-9e94-a4a59f28f465.PNG)
+![Delivery 취소](https://user-images.githubusercontent.com/18024566/134940951-ec43d05c-12c7-40b6-8840-63bec278da73.PNG)
+![MyPage 취소](https://user-images.githubusercontent.com/18024566/134940944-e8ca27ab-f619-41ae-9851-4fcf10ca5fb5.PNG)
 
 위 결과로 서로 다른 마이크로 서비스 간에 ID값으로 상호 연결되어 있음을 알 수 있다.
 
 ## 폴리글랏 퍼시스턴스
-- Apply 서비스의 DB와 MyPage의 DB를 다른 DB를 사용하여 폴리글랏 퍼시스턴스를 만족시키고 있다.(인메모리 DB인 hsqldb 사용)
+- Order 서비스의 DB와 MyPage의 DB를 다른 DB를 사용하여 폴리글랏 퍼시스턴스를 만족시키고 있다.(인메모리 DB인 hsqldb 사용)
 
-**Apply의 pom.xml DB 설정 코드**
+**Order의 pom.xml DB 설정 코드**
 
-![증빙5](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/5-1-h2.png)
+![Order DB](https://user-images.githubusercontent.com/18024566/134941165-a49450e1-330f-477f-b6b9-7318061a3887.PNG)
 
 **MyPage의 pom.xml DB 설정 코드**
 
-![증빙6](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/5-2-hsql.png)
-
-**MyPage의 hsqldb 적용 서버 로그**
-
-![증빙6](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/5-3-hsql-log.png)
+![MyPage DB](https://user-images.githubusercontent.com/18024566/134941252-390ee331-f625-44de-8669-a923564526cf.PNG)
 
 ## 동기식 호출 과 Fallback 처리
 
@@ -404,13 +406,10 @@ package store.external;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import java.util.Date;
-
-@FeignClient(name="Delivery", url="${api.url.delivery}") 
+@FeignClient(name = "Delivery", url = "${api.url.delivery}")
 public interface DeliveryService {
     // command
     @RequestMapping(method = RequestMethod.POST, path = "/deliveries", consumes = "application/json")
