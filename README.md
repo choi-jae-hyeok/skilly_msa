@@ -524,7 +524,6 @@ public class PolicyHandler {
     } 
 ```
 - 비동기식 호출은 다른 서비스가 비정상이여도 이상없이 동작가능하여, payment 서비스에 장애가 나도 order 서비스는 정상 동작을 확인
-```
 
 **Pay 서비스 내림**
 
