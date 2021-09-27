@@ -40,7 +40,7 @@
 ![Slide9](https://user-images.githubusercontent.com/18024566/134931444-38f02b48-d95f-4394-95c8-9fdcb33a638c.jpg)
 
 ## 헥사고날 아키텍처 다이어그램 도출
-![증빙1](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/1-hex_diagram.png)
+![diagram](https://user-images.githubusercontent.com/18024566/134932311-61d45260-2a31-4ff6-a09c-ea217148a452.jpg)
 
 # 구현
 - 분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다 (각각의 포트넘버는 8081 ~ 8084, 8088 이다)
