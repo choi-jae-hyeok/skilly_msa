@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order
+  labels:
+    app: order
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order
+  template:
+    metadata:
+      labels:
+        app: order
+    spec:
+      containers:
+        - name: order
+          image: skillyacr.azurecr.io/order:v3
+          ports:
+            - containerPort: 8080
+          # autoscale start
+          resources:
+              limits:
+                cpu: 500m
+              requests:
+                cpu: 200m
+          # autoscale end
+          ### config map start
+          env:
+            - name: CFG_SERVICE_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: servicetype
+                  key: svctype
+          ### config map end         
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 5
