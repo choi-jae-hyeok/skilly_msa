@@ -25,6 +25,19 @@
 ## Event Storming 결과
 ![Slide2](https://user-images.githubusercontent.com/18024566/134931292-8eecc8e0-bfc9-46ba-b1da-334ee82761ed.jpg)
 
+![Slide3](https://user-images.githubusercontent.com/18024566/134931346-2e65706f-c379-42c7-8fb2-ed91942d7de5.jpg)
+
+![Slide4](https://user-images.githubusercontent.com/18024566/134931358-acc8d67c-cbd2-4b1f-a7c8-b32a515255e1.jpg)
+
+![Slide5](https://user-images.githubusercontent.com/18024566/134931376-63b10706-3d3f-4dc9-ad3f-b75ea919398e.jpg)
+
+![Slide6](https://user-images.githubusercontent.com/18024566/134931392-57e8f7cd-0918-4475-8bfd-3689ec051fa3.jpg)
+
+![Slide7](https://user-images.githubusercontent.com/18024566/134931403-69986902-0596-48cb-8895-519506c7cdca.jpg)
+
+![Slide8](https://user-images.githubusercontent.com/18024566/134931426-576ceee9-3d83-4aaa-9b32-ffc67621f30d.jpg)
+
+![Slide9](https://user-images.githubusercontent.com/18024566/134931444-38f02b48-d95f-4394-95c8-9fdcb33a638c.jpg)
 
 ## 헥사고날 아키텍처 다이어그램 도출
 ![증빙1](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/1-hex_diagram.png)
