@@ -612,7 +612,7 @@ public class Apply {
 }
 ```
 
-* Apply 데이터 1건 추가 후 로그 확인
+* Order 데이터 1건 추가 후 로그 확인
 ```
 kubectl logs -f order-5d49c95c8c-zd4zm
 ```
