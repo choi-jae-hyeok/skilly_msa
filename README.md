@@ -574,13 +574,8 @@ kubectl -n kafka exec -ti my-kafka-0 -- /usr/bin/kafka-console-producer --broker
 kubectl -n kafka exec -ti my-kafka-0 -- /usr/bin/kafka-console-consumer --bootstrap-server my-kafka:9092 --topic store --from-beginning
 ```
 
-* 소스 가져오기
-```
-git clone https://github.com/jinmojeon/elearningStudentApply.git
-```
-
 ## ConfigMap
-* Apply 서비스 deployment.yml 파일에 설정
+* Order 서비스 deployment.yml 파일에 설정
 ```
 env:
    - name: CFG_SERVICE_TYPE
@@ -595,19 +590,22 @@ env:
 kubectl create configmap servicetype --from-literal=svctype=PRODUCT -n default -n default
 kubectl get configmap servicetype -o yaml
 ```
-![image](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/7-1-configmap.png)
+![캡처](https://user-images.githubusercontent.com/18024566/135023085-50278ca8-be17-4b2f-99ec-76f8e834fb6c.PNG)
 
 
-**Apply 마이크로 서비스의 Apply.java**
+**Order 마이크로 서비스의 Order.java**
 ```java 
 @Entity
 @Table(name="Apply_table")
 public class Apply {
     ...
     @PostPersist
-    public void onPostPersist(){
+    public void onPostPersist() {
+        System.out.println("################## Order onPostPersist Ordered");
+        // configMap 설정 // add by jm
         String cfgServiceType = System.getenv("CFG_SERVICE_TYPE");
-        if(cfgServiceType == null) cfgServiceType = "DEVELOP";
+        if (cfgServiceType == null)
+            cfgServiceType = "DEVELOP";
         System.out.println("################## CFG_SERVICE_TYPE: " + cfgServiceType);
     }
     ...
@@ -616,18 +614,16 @@ public class Apply {
 
 * Apply 데이터 1건 추가 후 로그 확인
 ```
-kubectl logs -f {pod ID}
+kubectl logs -f order-5d49c95c8c-zd4zm
 ```
-![image](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/7-2-configmap-print.png)
 
+![product](https://user-images.githubusercontent.com/18024566/135023361-8adf5f2d-b441-456c-a7eb-068fbc6a51f8.PNG)
 
 ## Deploy / Pipeline
 
 * build 하기
 ```
-cd C:\Lv2Assessment\Source\elearningStudentApply
-
-cd Apply
+cd Order
 mvn package 
 
 cd ..
@@ -650,39 +646,39 @@ mvn package
 * Azure 레지스트리에 도커 이미지 push, deploy, 서비스생성(yaml파일 이용한 deploy)
 ```
 cd .. 
-cd Apply
-az acr build --registry grp01 --image grp01.azurecr.io/apply:v1 .
+cd Order
+az acr build --registry skillyacr --image skillyacr.azurecr.io/order:v1 . 
 kubectl apply -f kubernetes/deployment.yml 
 kubectl apply -f kubernetes/service.yaml 
 
 cd .. 
 cd Pay
-az acr build --registry grp01 --image grp01.azurecr.io/pay:v1 .
+az acr build --registry skillyacr --image skillyacr.azurecr.io/pay:v1 . 
 kubectl apply -f kubernetes/deployment.yml 
 kubectl apply -f kubernetes/service.yaml 
 
 cd .. 
 cd Delivery
-az acr build --registry grp01 --image grp01.azurecr.io/delivery:v1 .
+az acr build --registry skillyacr --image skillyacr.azurecr.io/delivery:v1 . 
 kubectl apply -f kubernetes/deployment.yml 
 kubectl apply -f kubernetes/service.yaml 
 
 cd .. 
 cd MyPage
-az acr build --registry grp01 --image grp01.azurecr.io/mypage:v1 .
+az acr build --registry skillyacr --image skillyacr.azurecr.io/mypage:v1 . 
 kubectl apply -f kubernetes/deployment.yml 
 kubectl apply -f kubernetes/service.yaml 
 
 cd .. 
 cd gateway
-az acr build --registry grp01 --image grp01.azurecr.io/gateway:v1 .
+az acr build --registry skillyacr --image skillyacr.azurecr.io/gateway:v4 . 
 kubectl apply -f kubernetes/deployment.yml 
 kubectl apply -f kubernetes/service.yaml 
 ```
 
 * Service, Pod, Deploy 상태 확인
-![image](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/7-3-getall.png)
 
+![배포완료](https://user-images.githubusercontent.com/18024566/135023547-ee8d230a-aca3-4750-b1f1-1d7237c69697.PNG)
 
 * deployment.yml  참고
 ```
@@ -697,30 +693,39 @@ kubectl apply -f kubernetes/service.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: apply
+  name: order
   labels:
-    app: apply
+    app: order
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: apply
+      app: order
   template:
     metadata:
       labels:
-        app: apply
+        app: order
     spec:
       containers:
-        - name: apply
-          image: grp01.azurecr.io/apply:v2
+        - name: order
+          image: skillyacr.azurecr.io/order:v8
           ports:
             - containerPort: 8080
+          # autoscale start
+          resources:
+              limits:
+               cpu: 500m
+              requests:
+                cpu: 200m
+           autoscale end
+          ### config map start
           env:
             - name: CFG_SERVICE_TYPE
               valueFrom:
                 configMapKeyRef:
                   name: servicetype
-                  key: svctype      
+                  key: svctype
+          ### config map end         
           readinessProbe:
             httpGet:
               path: '/actuator/health'
@@ -729,7 +734,7 @@ spec:
             timeoutSeconds: 2
             periodSeconds: 5
             failureThreshold: 10
-          livenessProbe:
+          #livenessProbe:
             httpGet:
               path: '/actuator/health'
               port: 8080
@@ -737,16 +742,15 @@ spec:
             timeoutSeconds: 2
             periodSeconds: 5
             failureThreshold: 5
-
 ```
 
 ## Circuit Breaker
 * 서킷 브레이킹 프레임워크의 선택: Spring FeignClient + Hystrix 옵션을 사용하여 구현함
-* Apply -> Pay 와의 Req/Res 연결에서 요청이 과도한 경우 CirCuit Breaker 통한 격리
+* Order -> Pay 와의 Req/Res 연결에서 요청이 과도한 경우 CirCuit Breaker 통한 격리
 * Hystrix 를 설정: 요청처리 쓰레드에서 처리시간이 610 밀리가 넘어서기 시작하여 어느정도 유지되면 CB 회로가 닫히도록 (요청을 빠르게 실패처리, 차단) 설정
 
 ```yaml
-# Apply서비스 application.yml
+# Order서비스 application.yml
 
 feign:
   hystrix:
@@ -775,8 +779,7 @@ hystrix:
                  e.printStackTrace();
          }
 ```
-
-* C:\Lv2Assessment\Source\elearningStudentApply\Util\siege\kubernetes\deployment.yml
+* siege\kubernetes\deployment.yml
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -790,26 +793,23 @@ spec:
 
 * siege pod 생성
 ```
-cd C:\Lv2Assessment\Source\elearningStudentApply\Util\siege\kubernetes
+cd siege\kubernetes
 kubectl apply -f deployment.yml
 ```
 
-* 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인: 동시사용자 100명 60초 동안 실시
+* 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인: 동시사용자 50명 60초 동안 실시
 ```
 kubectl exec -it pod/siege -c siege -- /bin/bash
-siege -c100 -t60S  -v --content-type "application/json" 'http://{EXTERNAL-IP}:8080/applies POST {"studentId":"test123", "bookId":"bok123", "qty": "11", "amount":"2000"}'
-siege –c100 –t60S  -v --content-type "application/json" 'http://20.196.242.11:8080/applies POST {"studentId":"test123", "bookId":"bok123", "qty": "11", "amount":"2000"}'
+siege –c50 –t60S  -v --content-type "application/json" 'http://40.89.192.251:8080/orders POST {"customerId":"cust1", "coffeeId":"001", "qty": "10", "amount":"1000"}' 
 ```
-![image](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/7-4-siege.png)
+![서킷브레이커(1)](https://user-images.githubusercontent.com/18024566/135023952-bceb07be-92e9-4721-ba6f-bb6c84235489.PNG)
 
-![image](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/7-5-1-siege-result.png)
-
-
+![서킷브레이커(2)](https://user-images.githubusercontent.com/18024566/135023972-3a3ec58a-137e-4b74-b142-e844c00041ff.PNG)
 
 ## 오토스케일 아웃
 * 앞서 서킷 브레이커(CB) 는 시스템을 안정되게 운영할 수 있게 해줬지만 사용자의 요청을 100% 받아들여주지 못했기 때문에 이에 대한 보완책으로 자동화된 확장 기능을 적용하고자 한다.
 
-* Apply 서비스 deployment.yml 설정
+* Order 서비스 deployment.yml 설정
 ```yaml
           resources:
               limits:
@@ -819,54 +819,35 @@ siege –c100 –t60S  -v --content-type "application/json" 'http://20.196.242.1
 ```
 * 다시 배포해준다.
 ```
-cd C:\Lv2Assessment\Source\elearningStudentApply\Apply
+cd Order
 mvn package
-az acr build --registry grp01 --image grp01.azurecr.io/apply:v2 .
+az acr build --registry skillyacr --image skillyacr.azurecr.io/order:v8 . 
 kubectl apply -f kubernetes/deployment.yml
 
 ```
 
-* Apply 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 50프로를 넘어서면 replica 를 2개까지 늘려준다
+* Order 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 50프로를 넘어서면 replica 를 2개까지 늘려준다
 
 ```
-kubectl autoscale deploy apply --min=1 --max=2 --cpu-percent=50
+kubectl autoscale deploy Order --min=1 --max=2 --cpu-percent=50
 ```
-
-* C:\Lv2Assessment\Source\elearningStudentApply\Util\siege\kubernetes\deployment.yml
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: siege
-spec:
-  containers:
-  - name: siege
-    image: apexacme/siege-nginx
-```
-
 * siege pod 생성
 ```
-cd C:\Lv2Assessment\Source\elearningStudentApply\Util\siege\kubernetes
+cd siege\kubernetes
 kubectl apply -f deployment.yml
 ```
 
-* 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인: 동시사용자 100명 60초 동안 실시
+* 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인: 동시사용자 50명 60초 동안 실시
 ```
 kubectl exec -it pod/siege -c siege -- /bin/bash
-siege -c100 -t60S  -v --content-type "application/json" 'http://{EXTERNAL-IP}:8080/applies POST {"studentId":"test123", "bookId":"bok123", "qty": "11", "amount":"2000"}'
-siege –c100 –t60S  -v --content-type "application/json" 'http://20.196.242.11:8080/applies POST {"studentId":"test123", "bookId":"bok123", "qty": "11", "amount":"2000"}'
+siege –c50 –t60S  -v --content-type "application/json" 'http://40.89.192.251:8080/orders POST {"customerId":"cust1", "coffeeId":"001", "qty": "10", "amount":"1000"}' 
 ```
 
 * 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다
 ```
-kubectl get deploy apply -w
+kubectl get deploy order -w
 ```
-![image](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/8-1-autoscale-w.png)
-```
-kubectl get pod
-```
-![image](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/8-2-autoscale-pod.png)
-
+![오토스케일](https://user-images.githubusercontent.com/18024566/135024343-1a4e28c8-779b-49ea-9ad9-cb5ec2e5c074.PNG)
 
 
 ## 무정지 재배포(Readiness Probe)
@@ -875,44 +856,25 @@ kubectl get pod
 
 - seige 로 배포작업 직전에 워크로드를 모니터링 함.
 ```
-siege –c100 -t120S -r10 --content-type "application/json" 'http://Apply:8080/applies POST {"studentId":"test123", "bookId":"bok123", "qty": "11", "amount":"2000"}'
-
-
-** SIEGE 4.0.5
-** Preparing 100 concurrent users for battle.
-The server is now under siege...
-
-HTTP/1.1 201     0.68 secs:     207 bytes ==> POST http://Apply:8080/applies
-HTTP/1.1 201     0.68 secs:     207 bytes ==> POST http://Apply:8080/applies
-HTTP/1.1 201     0.70 secs:     207 bytes ==> POST http://Apply:8080/applies
-HTTP/1.1 201     0.70 secs:     207 bytes ==> POST http://Apply:8080/applies
-:
-
+kubectl exec -it pod/siege -c siege -- /bin/bash
+siege –c50 –t60S  -v --content-type "application/json" 'http://40.89.192.251:8080/orders POST {"customerId":"cust1", "coffeeId":"001", "qty": "10", "amount":"1000"}' 
 ```
 
 - 새버전으로의 배포 시작
 ```yaml
-cd C:\Lv2Assessment\Source\elearningStudentApply\Apply
+cd Order
 mvn package
-az acr build --registry grp01 --image grp01.azurecr.io/apply:v2 .
+az acr build --registry skillyacr --image skillyacr.azurecr.io/order:v8 . 
 kubectl apply -f kubernetes/deployment.yml
 ```
 
 - seige 의 화면으로 넘어가서 Availability 가 100% 미만으로 떨어졌는지 확인
-```
-Transactions:		        3078 hits
-Availability:		       70.45 %
-Elapsed time:		       120 secs
-Data transferred:	        0.34 MB
-Response time:		        5.60 secs
-Transaction rate:	       17.15 trans/sec
-Throughput:		        0.01 MB/sec
-Concurrency:		       96.02
 
-```
+![무정지배포(100%미만)](https://user-images.githubusercontent.com/18024566/135024483-8bdc1d45-f383-465e-a931-374f8282b961.PNG)
+
 배포기간중 Availability 가 평소 100%에서 70% 대로 떨어지는 것을 확인. 원인은 쿠버네티스가 성급하게 새로 올려진 서비스를 READY 상태로 인식하여 서비스 유입을 진행한 것이기 때문. 이를 막기위해 Readiness Probe 를 설정함:
 
-* Apply 서비스 deployment.yml 파일에 Readiness Probe 부분 설정
+* Order 서비스 deployment.yml 파일에 Readiness Probe 부분 설정
 
 ```yaml
     readinessProbe:
@@ -926,17 +888,16 @@ Concurrency:		       96.02
 ```
 
 * 디플로이 시작
-
 ```yaml
-cd C:\Lv2Assessment\Source\elearningStudentApply\Apply
+cd Order
 mvn package
-az acr build --registry grp01 --image grp01.azurecr.io/apply:v3 .
+az acr build --registry skillyacr --image skillyacr.azurecr.io/order:v9 . 
 kubectl apply -f kubernetes/deployment.yml
 ```
 
 - 동일한 시나리오로 재배포 한 후 Availability 확인:
 
-![image](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/9-2-readiness-seige.png)
+![무정지배포(정상(](https://user-images.githubusercontent.com/18024566/135024550-133e213f-ebc1-43c0-a552-d7eaa3bfa9a9.PNG)
 
 배포기간 동안 Availability 가 변화없기 때문에 무정지 재배포가 성공한 것으로 확인됨.
 
@@ -957,7 +918,7 @@ kubectl apply -f kubernetes/deployment.yml
 ```
 kubectl describe deploy delivery
 ```
-![image](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/10-1-liveness-port.png)
+![셀프힐링](https://user-images.githubusercontent.com/18024566/135024648-12c2cd9c-76c8-422b-9dea-3d6976bd7fee.PNG)
 
 - Pod 재시작 확인
 ```
