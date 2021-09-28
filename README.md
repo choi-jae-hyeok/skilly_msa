@@ -166,7 +166,7 @@ spec:
 ## DDD 의 적용
 - 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다: (예시는 Order 마이크로 서비스).이때 가능한 현업에서 사용하는 언어 (유비쿼터스 랭귀지)를 그대로 사용하였다.
 
-- Order 마이크로 서비스의 Order.java
+**Order 마이크로 서비스의 Order.java**
 ```java
 package store;
 
