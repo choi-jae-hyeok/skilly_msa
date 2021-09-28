@@ -872,7 +872,7 @@ kubectl apply -f kubernetes/deployment.yml
 
 ![무정지배포(100%미만)](https://user-images.githubusercontent.com/18024566/135024483-8bdc1d45-f383-465e-a931-374f8282b961.PNG)
 
-배포기간중 Availability 가 평소 100%에서 70% 대로 떨어지는 것을 확인. 원인은 쿠버네티스가 성급하게 새로 올려진 서비스를 READY 상태로 인식하여 서비스 유입을 진행한 것이기 때문. 이를 막기위해 Readiness Probe 를 설정함:
+배포기간중 Availability 가 평소 100%에서 90% 대로 떨어지는 것을 확인. 원인은 쿠버네티스가 성급하게 새로 올려진 서비스를 READY 상태로 인식하여 서비스 유입을 진행한 것이기 때문. 이를 막기위해 Readiness Probe 를 설정함:
 
 * Order 서비스 deployment.yml 파일에 Readiness Probe 부분 설정
 
