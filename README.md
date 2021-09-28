@@ -355,7 +355,7 @@ http http://52.231.192.155:8080/myPages
 
 - Correlation-key 
 
-Correlation을 Key를 활용하기 위해 Id를 Key값으로 사용하였으며 신청된 교재를 동일한 Id로 취소한다.
+Correlation Key를 활용하기 위해 Id를 Key값으로 사용하였으며 신청된 교재를 동일한 Id로 취소한다.
 
 신청 취소가 되면 OrderStatus가 cancelled로 Update 되는 것을 볼 수 있다.
 
