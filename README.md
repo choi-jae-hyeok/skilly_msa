@@ -345,19 +345,13 @@ http http://52.231.192.155:8080/myPages
 
 주문/ 결제 / 배송 서비스의 전체 현황 및 상태 조회를 제공하기 위해 MyPage를 구성하였다.
 
-커피캡슐 주문 정보를 등록한다.
-
-** 등록**
+**Order 서비스를 통해 커피캡슐 주문**
 
 ![Order POST](https://user-images.githubusercontent.com/18024566/134940692-dd5851bd-5ea4-4bf8-a8a9-71ce28a1f762.PNG)
-
-
-MyPage CQRS 결과는 아래와 같다
 
 **Order 실행 후 MyPages**
 
 ![MyPage 조회](https://user-images.githubusercontent.com/18024566/134940745-7b8ba72d-9087-4e88-8a6f-236eef459a27.PNG)
-
 
 - Correlation-key 
 
@@ -371,7 +365,6 @@ http PUT http://52.231.192.155:8080/orders/1 customerId="cust1" customerName="Ja
 ```
 
 ![Order 취소](https://user-images.githubusercontent.com/18024566/134940891-a8edf6f8-8d51-47f5-a1af-0cd91bc4d94d.PNG)
-
 
 위와 같이 하게되면 Order > Pay > Delivery > MyPage 순서로 신청이 처리된다.
 
