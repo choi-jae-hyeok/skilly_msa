@@ -390,9 +390,9 @@ http PUT http://52.231.192.155:8080/orders/1 customerId="cust1" customerName="Ja
 
 - 분석단계에서의 조건 중 하나로 결제 서비스(Pay)와 배송 서비스(Delivery) 간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 호출 프로토콜은 Rest Repository에 의해 노출되어있는 REST 서비스를 FeignClient를 이용하여 호출하도록 한다.
 
-결제서비스를 호출하기 위하여 Stub과 (FeignClient) 를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현
+pay서비스의 external.DeliveryService.jaeva 내에 delivery서비스를 호출하기 위하여 FeignClient를 이용하여 Service 대행 인터페이스(Proxy) 를 구현
 
-**Pay 서비스 내 external.DeliveryService**
+**pay/external/DeliveryService.java**
 ```java
 package store.external;
 
