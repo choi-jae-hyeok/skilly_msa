@@ -327,7 +327,7 @@ http POST http://52.231.192.155:8080/orders customerId="cust1" customerName="Jac
 ![Order POST](https://user-images.githubusercontent.com/18024566/134940173-bb3060da-2c72-466a-9efe-a8b2fe965a5a.PNG)
 
 
-**Order/Pag/Delivery/MyPage서비스 신청정보 조회**
+**Order/Pay/Delivery/MyPage서비스 신청정보 조회**
 ```
 http http://52.231.192.155:8080/orders 
 http http://52.231.192.155:8080/pays 
