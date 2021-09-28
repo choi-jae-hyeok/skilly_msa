@@ -924,4 +924,5 @@ kubectl describe deploy delivery
 ```
 kubectl get pod -w
 ```
-![image](https://github.com/jinmojeon/elearningStudentApply/blob/main/Images/10-2-liveness-pod.png)
+![liveness](https://user-images.githubusercontent.com/18024566/135028076-1978a30a-c3b2-400c-a995-99ef91d86179.PNG)
+
